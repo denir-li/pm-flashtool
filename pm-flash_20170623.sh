@@ -1,0 +1,126 @@
+#!/bin/bash
+set -ex
+
+# The job of flashtool is to,
+# - detect which device is connected
+# - download files for specific device
+# - install the recovery
+# - install the Plasma rootfs
+# - reboot
+
+CACHEDIR=cache
+
+#wait until we get a working adb shell, meaning the device is in normal or recovery mode
+wait_for_device() {
+    while test -z "$(adb shell echo '1' 2>/dev/null)"
+    do
+        echo -n ".";
+        sleep 3;
+    done
+    echo
+}
+
+confirm()
+{
+# call with a prompt string or use a default
+    read -r -p "${1:-Are you sure? [y/N]} " response
+        case $response in
+        [yY][eE][sS]|[yY])
+        true
+            ;;
+    *)
+        false
+        ;;
+    esac
+}
+
+download()
+{
+    # If no device name was supplied just bail out
+    if [ $# -eq 0 ]; then
+        echo "No device name was supplied to download, this is fatal error"
+        exit 1
+    fi
+
+    # Cleanup
+    mkdir -p $CACHEDIR/ && pushd $CACHEDIR/
+
+    echo "Downloading latest rootfs ... "
+    if [ "$2" == "neon" ]; then
+        ROOTFS_VERSION=20170623-101458
+        wget -c "https://images.plasma-mobile.org/legacy-rootfs/pm-rootfs-20170623-101458.tar.gz" -P rootfs
+        ln -sf rootfs/pm-rootfs-20170623-101458.tar.gz pm-rootfs-latest.tar.gz
+    fi
+    if [ "$2" == "arch" ]; then
+        ROOTFS_VERSION=`curl https://images.plasma-mobile.org/arch_rootfs_stamp 2> /dev/null`
+        wget -c "https://images.plasma-mobile.org/arch-rootfs/pm-rootfs-$ROOTFS_VERSION.tar.gz" -P rootfs
+        ln -sf rootfs/pm-rootfs-$ROOTFS_VERSION.tar.gz pm-rootfs-latest.tar.gz
+    fi
+    if [ "$2" == "edge" ]; then
+        ROOTFS_VERSION=`curl https://images.plasma-mobile.org/edge_rootfs_stamp 2> /dev/null`
+        wget -c "https://images.plasma-mobile.org/edge-rootfs/pm-rootfs-$ROOTFS_VERSION.tar.gz" -P rootfs
+        ln -sf rootfs/pm-rootfs-$ROOTFS_VERSION.tar.gz pm-rootfs-latest.tar.gz
+    fi
+    echo "[done]"
+
+    # This will change in future
+    echo "Downloading the latest boot, recovery, and system images  ... "
+    HALIUM_VERSION=20170623-085147
+    wget -c "https://images.plasma-mobile.org/halium/$1/recovery.img" -P $1
+    wget -c "https://images.plasma-mobile.org/halium/$1/$HALIUM_VERSION/system.img" -P $1/$HALIUM_VERSION
+    wget -c "https://images.plasma-mobile.org/halium/$1/$HALIUM_VERSION/boot.img" -P $1/$HALIUM_VERSION
+    rm -f $1/latest
+    ln -sf $HALIUM_VERSION $1/latest
+    echo "[done]"
+
+    popd
+}
+
+flash-phone()
+{
+    # If no device name was supplied just bail out
+    if [ $# -eq 0 ]; then
+        echo "No device name was supplied to flash-phone, this is fatal error"
+        exit 1
+    fi
+
+    echo -n "Flashing recovery image ... "
+    fastboot flash recovery $CACHEDIR/$1/recovery.img 2> /dev/null
+    echo -n "[done]"
+
+    fastboot boot $CACHEDIR/$1/recovery.img
+    wait_for_device
+    ./rootstock-touch-install `readlink -f $CACHEDIR/pm-rootfs-latest.tar.gz` $CACHEDIR/$1/latest/system.img $CACHEDIR/$1/latest/boot.img
+}
+
+echo "Waiting for device to be in the fastboot mode"
+fastboot getvar product
+
+DEVICE_NAME=`fastboot getvar product 2>&1 | head -1 | awk -F': ' '{print $2}'`
+confirm "Connected device is $DEVICE_NAME, is that correct? [y/N]" || exit 1
+
+PLATFORM="neon"
+
+echo "Continuing ..."
+
+while getopts "cp:" opt; do
+  case $opt in
+    c)
+	  echo "Option provided to use cache, not downloading files again"
+	  NOCACHE=1
+      ;;
+    p)
+      PLATFORM="$OPTARG"
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "$NOCACHE" ]; then
+	download $DEVICE_NAME $PLATFORM
+fi
+
+flash-phone $DEVICE_NAME
