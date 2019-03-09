@@ -48,8 +48,8 @@ download()
     echo "Downloading latest rootfs ... "
     if [ "$2" == "neon" ]; then
         ROOTFS_VERSION=20170623-101458
-        wget -c "https://images.plasma-mobile.org/legacy-rootfs/pm-rootfs-20170623-101458.tar.gz" -P rootfs
-        ln -sf rootfs/pm-rootfs-20170623-101458.tar.gz pm-rootfs-latest.tar.gz
+        wget -c "https://images.plasma-mobile.org/legacy-rootfs/pm-rootfs-20180524-110808.tar.gz" -P rootfs
+        ln -sf rootfs/pm-rootfs-20180524-110808.tar.gz pm-rootfs-latest.tar.gz
     fi
     if [ "$2" == "arch" ]; then
         ROOTFS_VERSION=`curl https://images.plasma-mobile.org/arch_rootfs_stamp 2> /dev/null`
