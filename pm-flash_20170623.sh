@@ -47,7 +47,7 @@ download()
 
     echo "Downloading latest rootfs ... "
     if [ "$2" == "neon" ]; then
-        ROOTFS_VERSION=20170623-101458
+    #   ROOTFS_VERSION=20180524-110808
         wget -c "https://images.plasma-mobile.org/legacy-rootfs/pm-rootfs-20180524-110808.tar.gz" -P rootfs
         ln -sf rootfs/pm-rootfs-20180524-110808.tar.gz pm-rootfs-latest.tar.gz
     fi
