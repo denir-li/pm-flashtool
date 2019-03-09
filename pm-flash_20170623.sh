@@ -65,12 +65,13 @@ download()
 
     # This will change in future
     echo "Downloading the latest boot, recovery, and system images  ... "
-    HALIUM_VERSION=20170623-085147
+    rm -rf $1/latest
+    # HALIUM_VERSION=20170623-085147
     wget -c "https://images.plasma-mobile.org/halium/$1/recovery.img" -P $1
-    wget -c "https://images.plasma-mobile.org/halium/$1/$HALIUM_VERSION/system.img" -P $1/$HALIUM_VERSION
-    wget -c "https://images.plasma-mobile.org/halium/$1/$HALIUM_VERSION/boot.img" -P $1/$HALIUM_VERSION
-    rm -f $1/latest
-    ln -sf $HALIUM_VERSION $1/latest
+    wget -c "https://images.plasma-mobile.org/halium/$1/20181029-111411/system.img" -P $1/latest
+    wget -c "https://images.plasma-mobile.org/halium/$1/20170623-085147/boot.img" -P $1/latest
+    # rm -f $1/latest
+    # ln -sf $HALIUM_VERSION $1/latest
     echo "[done]"
 
     popd
