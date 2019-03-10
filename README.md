@@ -1,3 +1,9 @@
+# Fork for Nexus 5 (hammerhead) by Denir
+The latest version of halium and pm-rootfs doesn't boot normally on Nexus 5 (hammerhead), so I try to downgrade to the old version of halium and pm-rootfs to resolve boot loop issue and rootfs load issue. After testing, the last combination that can be booted normally is as follows:
+1. halium (20170623-085147) boot.img: https://images.plasma-mobile.org/halium/hammerhead/20170623-085147/boot.img
+2. halium (20181029-111411) system.img: https://images.plasma-mobile.org/halium/hammerhead/20181029-111411/system.img
+3. pm-rootfs-20180524-110808: https://images.plasma-mobile.org/legacy-rootfs/pm-rootfs-20180524-110808.tar.gz
+
 # pm-flashtool
 Tool for Flashing CM+PM as LXC Container
 
@@ -24,13 +30,13 @@ To run..
 ```
 git clone https://github.com/plasma-phone-packaging/pm-flashtool.git
 cd pm-flashtool
-./pm-flash
+./pm-flash_20170623.sh
 ```
 
 Without options pm-flash script downloads all files again, pass '-c' to let it use cache instead
 
 ```
-./pm-flash -c
+./pm-flash_20170623.sh -c
 ```
 
 This
