@@ -28,7 +28,7 @@ Tool for Flashing CM+PM as LXC Container
 To run..
 
 ```
-git clone https://github.com/plasma-phone-packaging/pm-flashtool.git
+git clone https://github.com/denir-li/pm-flashtool.git
 cd pm-flashtool
 ./pm-flash_20170623.sh
 ```
